@@ -89,7 +89,7 @@ bool SIM800C::create_tcp_server(unsigned int port)
 	return exec(at) && find_result("SERVER OK");
 }
 
-// false -> µ¥Á´Â· true -> ¶àÁ´Â·
+// false -> å•é“¾è·¯ true -> å¤šé“¾è·¯
 bool SIM800C::multi_link_mode(bool flag)
 {
 	char at[15];
@@ -123,7 +123,7 @@ bool SIM800C::echo(bool flag)
 	return exec(at) && find_result("OK");
 }
 
-// »ùÕ¾¶¨Î»
+// åŸºç«™å®šä½
 bool SIM800C::base_station_position(double &longitude, double &latitude, unsigned int &precision)
 {
 	exec("AT+SAPBR=3,1,\"APN\",\"3gnet\"");
