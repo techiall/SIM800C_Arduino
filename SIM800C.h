@@ -4,60 +4,78 @@
 #define _SIM800C_h
 
 
-#include "Arduino.h"
+#include <Arduino.h>
 #include <SoftwareSerial.h>
 
 
 #define DEFAULT_TIMEOUT 1000
 
-class SIM800C {
+class SIM800C
+{
 	SoftwareSerial sim;
-	String buffer;
 
-	bool find_result(const char *res_1, const char *res_2 = "");
-	
+
+	bool find_result(const String buffer,
+	                 const char *res1, const char *res2 = "");
+	/*
+	 * 清理缓冲区，上一次条 at 指令发送完，可能有些没收到，保留在缓冲区内
+	 */
 	void clean_buffer();
 
 public:
-
+	/*
+	 * 初始化，利用软串口配置 RX, TX，并设置波特率
+	 */
 	SIM800C(const int TX_PIN = 8, const int RX_PIN = 9,
-		const int baud_rate = 9600) :sim(TX_PIN, RX_PIN) {
+	        const int baud_rate = 9600) : sim(TX_PIN, RX_PIN)
+	{
 		sim.begin(baud_rate);
 	}
 
-	bool init();
-	
-	bool restart();
+	String serial_event();
 
-	bool sim_status();
+	void send_at_command(const char *at, const bool newline = true,
+	                     const unsigned long delay_time = 3000);
 
-	bool net_registration();
-
-	bool gprs_status();
-
-	bool apn(const char *apn = "CMNET");
-
-	bool create_tcp(const char *ip, unsigned int port);
-
-	bool tcp_send(const char *send);
-
-	String send_result();
-
-	unsigned long get_num_localip();
-	
-	String get_str_localip();
-
-	bool echo(bool flag); 
-
+	/*
+	 * 调试 at 指令
+	 * 测试配置串口后，是否可以正常接收，发送数据
+	 */
 	void debug();
 
-	bool create_tcp_server(unsigned int port);
+	/*
+	 * 重启模块 
+	 */
+	bool restart();
 
-	bool multi_link_mode(bool flag);
+	/*
+	 * tcp 连接初始化
+	 * AT
+	 * AT+IPR=9600
+	 * AT&W
+	 * AT+CPIN?
+	 * AT+CSQ
+	 * AT+CREG?
+	 * AT+CGREG?
+	 * AT+CAGTT=1
+	 * AT+CIPMODE=1
+	 * AT+CSTT=\"CMNET\" 默认为 CMNET，后期优化为传参数
+	 * "AT+CIICR
+	 * AT+CIFSR
+	 */
+	bool tcp_link_init();
 
-	unsigned int exec(const char *AT, unsigned int timeout = DEFAULT_TIMEOUT);
+	bool create_http_request(const char *method, const char *ip,
+	                         unsigned int port);
 
-	bool base_station_position(double &longitude, double &latitude, unsigned int &precision);
+	bool http_send(const char *send);
+
+	String create_http_request_message(const char *method,
+	                                   const char *url, const char *version,
+	                                   const char *head, const char *body = "");
+
+	String get_at_result(const char *at, const bool newline = true,
+	                     const unsigned long delay_time = 3000);
 };
 
 #endif
